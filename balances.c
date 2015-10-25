@@ -137,29 +137,51 @@ int valid_node_after_tree(struct blockchain_node node) {
 		  * block. (Use the transaction_hash function.) */
 		struct blockchain_node *ancestor = node.parent;
 		int found = 0;
+		// Retain the previous transaction for the next one
+		struct transaction *previous_transaction;
 		while (ancestor) {
-
 			// Check reward_tx hash
 			hash_output reward_tx_hash;
 			transaction_hash(&ancestor->b.reward_tx, reward_tx_hash);
 			if (byte32_cmp(node.b.normal_tx.prev_transaction_hash, reward_tx_hash) == 0) {
 				found = 1;
+				previous_transaction = &ancestor->b.reward_tx;
 				break;
 			}
-
 			// Check normal_tx hash
 			hash_output normal_tx_hash;
 			transaction_hash(&ancestor->b.normal_tx, normal_tx_hash);
 			if (byte32_cmp(node.b.normal_tx.prev_transaction_hash, normal_tx_hash) == 0) {
 				found = 1;
+				previous_transaction = &ancestor->b.normal_tx;
 				break;
 			}
-
 			ancestor = ancestor->parent;
 		}
 		// We didn't find a matching hash, return 0.
 		if (found != 1) {
 			return 0;
+		}
+
+		/** The signature on normal_tx must be valid using the dest_pubkey of the previous
+		  * transaction that has hash value normal_tx.prev_transaction_hash. (Use the
+		  * transaction_verify function.) */
+		if (transaction_verify(&node.b.normal_tx, previous_transaction) == 1) {
+			// Success
+		} else {
+			// Failure
+			return 0;
+		}
+
+		/** The coin must not have already been spent: there must be no ancestor block that
+		  * has the same normal_tx.prev_transaction_hash.
+		  */
+		ancestor = node.parent;
+		while (ancestor) {
+			if (byte32_cmp(node.b.normal_tx.prev_transaction_hash, ancestor->b.normal_tx.prev_transaction_hash) == 0) {
+				return 0;
+			}
+			ancestor = ancestor->parent;
 		}
 	}
 
@@ -254,10 +276,45 @@ int main(int argc, char *argv[])
 	// Now that we have a tree we can do further checks on validity
 	// that requires ancestry
 	for (i = 0; i < vblockc; i++) {
-		struct blockchain_node blocknode = blocknodes[i];
-		if (valid_node_after_tree(blocknode)) {
-			// printf("VALID NODE AFTER TREE\n");
+		struct blockchain_node *blocknode = &blocknodes[i];
+		if (!valid_node_after_tree(*blocknode)) {
+			blocknode->is_valid = 0;
 		}
+	}
+
+	// Now go through and try to find the longest chain.
+	int leaf_idx;
+	for (leaf_idx = vblockc - 1; leaf_idx >= 0; leaf_idx--) {
+		// See if we can traverse all the way without it being invalid
+		struct blockchain_node *node = &blocknodes[leaf_idx];
+		int valid = 1;
+		while (node) {
+			if (!node->is_valid) {
+				valid = 0;
+			}
+			node = node->parent;
+		}
+		if (valid) {
+			// Found it.
+			break;
+		}
+	}
+
+	// We now know the longest chain starts at index leaf_idx and can create the path to track for balances.
+	int chain_height = blocknodes[leaf_idx].b.height;
+	int chain_length = chain_height + 1;
+	struct blockchain_node *longest_chain = malloc(chain_length * sizeof(struct blockchain_node));
+	int chain_idx = chain_height;
+	struct blockchain_node *node = &blocknodes[leaf_idx];
+	while (node) {
+		longest_chain[chain_idx] = *node;
+		chain_idx--;
+		node = node->parent;
+	}
+
+	// We can now go through the chain and construct the balances
+	for (i = 0; i < chain_length; i++) {
+		block_print(&longest_chain[i].b, stdout);
 	}
 
 	/* Organize into a tree, check validity, and output balances. */
@@ -271,5 +328,7 @@ int main(int argc, char *argv[])
 		free(p);
 	}
 
+	free(blocks);
+	free(blocknodes);
 	return 0;
 }
