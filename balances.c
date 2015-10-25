@@ -205,6 +205,29 @@ int parentnode_of_block(struct block b, struct blockchain_node *blocknodes, int 
 	return -1;
 }
 
+// Looks through the chain of blocks and tries to find the transaction
+// with hash matching prev_transaction_hash
+struct transaction *transaction_for_hash(struct blockchain_node *longest_chain, int chain_length, hash_output prev_transaction_hash) {
+	int i;
+	for (i = 0; i < chain_length; i++) {
+		struct blockchain_node node = longest_chain[i];
+		struct block b = node.b;
+		// Check reward_tx hash
+		hash_output reward_tx_hash;
+		transaction_hash(&b.reward_tx, reward_tx_hash);
+		if (byte32_cmp(prev_transaction_hash, reward_tx_hash) == 0) {
+			return &longest_chain[i].b.reward_tx;
+		}
+		// Check normal_tx hash
+		hash_output normal_tx_hash;
+		transaction_hash(&b.normal_tx, normal_tx_hash);
+		if (byte32_cmp(prev_transaction_hash, normal_tx_hash) == 0) {
+			return &longest_chain[i].b.normal_tx;
+		}
+	}
+	return NULL;
+}
+
 int main(int argc, char *argv[])
 {
 	int i;
@@ -312,15 +335,23 @@ int main(int argc, char *argv[])
 		node = node->parent;
 	}
 
+	struct balance *balances = NULL, *p, *next;
 	// We can now go through the chain and construct the balances
 	for (i = 0; i < chain_length; i++) {
-		block_print(&longest_chain[i].b, stdout);
+		struct blockchain_node node = longest_chain[i];
+		struct block b = node.b;
+		// reward_tx increment.
+	   	balances = balance_add(balances, &b.reward_tx.dest_pubkey, 1);
+
+	   	if (!byte32_is_zero(b.normal_tx.prev_transaction_hash)) {
+	   		// normal_tx increment and decrement.
+			balances = balance_add(balances, &b.normal_tx.dest_pubkey, 1);
+			struct transaction *prev_transaction = transaction_for_hash(longest_chain, chain_length, b.normal_tx.prev_transaction_hash);
+			balances = balance_add(balances, &prev_transaction->dest_pubkey, -1);
+	   	}
 	}
 
-	/* Organize into a tree, check validity, and output balances. */
-	/* TODO */
 
-	struct balance *balances = NULL, *p, *next;
 	/* Print out the list of balances. */
 	for (p = balances; p != NULL; p = next) {
 		next = p->next;
