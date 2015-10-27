@@ -1,0 +1,7 @@
+1) The current mining difficulty is 60,883,825,480 as of 10/27/2015 3:36 am.
+
+2) It takes about a second for my computer to mine a block.
+
+3) time = difficulty * 2**32 / hashrate ???
+
+4) ???
