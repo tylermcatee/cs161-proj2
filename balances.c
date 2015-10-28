@@ -249,6 +249,7 @@ int main(int argc, char *argv[])
 		}
 
 		// Add the block to the blocks array
+		// block_print(&b, stdout);
 		blocks[i - 1] = b;
 		/* TODO */
 		/* Feel free to add/modify/delete any code you need to. */
@@ -351,6 +352,41 @@ int main(int argc, char *argv[])
 	   	}
 	}
 
+	//PART 2
+	// struct block block5;
+	// struct block newblock;
+	// struct block headblock;
+
+	// block_read_filename(&block5, "blocks/c907b60e.blk");
+	// block_read_filename(&headblock, "blocks/myblock1.blk");
+
+	// block_init(&newblock, &headblock);
+	// transaction_set_dest_privkey(&newblock.reward_tx, key_read_filename("mykey.priv")); 
+	// transaction_set_prev_transaction(&newblock.normal_tx, &block5.reward_tx);
+	// transaction_set_dest_privkey(&newblock.normal_tx, key_read_filename("mykey.priv"));
+	// transaction_sign(&newblock.normal_tx, key_read_filename("weak2.pub"));
+	// block_mine(&newblock);
+	// block_write_filename(&newblock, "blocks/myblock2.blk");
+
+	// struct blockchain_node *block4node = &longest_chain[4];
+	//struct blockchain_node *headblocknode = block4node->parent;
+
+	//FIRST PART
+	// struct block block4;
+	// struct block headblock;
+	// struct block newblock;
+
+	// block_read_filename(&block4, "blocks/2fc2e2f3.blk");
+	// block_read_filename(&headblock, "blocks/c907b60e.blk");
+
+	// block_init(&newblock, &headblock);
+	// transaction_set_dest_privkey(&newblock.reward_tx, key_read_filename("mykey.priv"));
+	// transaction_set_prev_transaction(&newblock.normal_tx, &block4.normal_tx);
+	// transaction_set_dest_privkey(&newblock.normal_tx, key_read_filename("mykey.priv"));
+	// transaction_sign(&newblock.normal_tx, key_read_filename("weak1.pub"));
+	// block_mine(&newblock);
+	// block_write_filename(&newblock, "blocks/myblock1.blk");
+
 
 	/* Print out the list of balances. */
 	for (p = balances; p != NULL; p = next) {
@@ -362,4 +398,5 @@ int main(int argc, char *argv[])
 	free(blocks);
 	free(blocknodes);
 	return 0;
+
 }

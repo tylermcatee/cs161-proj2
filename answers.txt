@@ -1,7 +1,16 @@
-1) The current mining difficulty is 60,883,825,480 as of 10/27/2015 3:36 am.
+1) 60,883,825,480
 
-2) It takes about a second for my computer to mine a block.
+2) about 20 seconds.
 
-3) time = difficulty * 2**32 / hashrate ???
+3) Hash rate = 2^24 / 20 seconds
 
-4) ???
+difficulty * 2^32 hashes / hashrate 
+60,883,825,480 * 2^32/2^24 = 311725186457600 seconds
+
+which is about 9,884,740 years.
+
+
+4) hashrate = difficulty * 2^32 hashes / 10 min
+2^56 hashes / hashrate = 0.165 seconds
+
+So it would take the bitcoin network 0.165 seconds.
