@@ -1,0 +1,16 @@
+1) 60,883,825,480
+
+2) about 20 seconds.
+
+3) Hash rate = 2^24 / 20 seconds
+
+difficulty * 2^32 hashes / hashrate 
+60,883,825,480 * 2^32/2^24 = 311725186457600 seconds
+
+which is about 9,884,740 years.
+
+
+4) hashrate = difficulty * 2^32 hashes / 10 min
+2^56 hashes / hashrate = 0.165 seconds
+
+So it would take the bitcoin network 0.165 seconds.

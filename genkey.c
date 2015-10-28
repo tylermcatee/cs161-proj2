@@ -60,7 +60,7 @@ static EC_KEY *generate_public_key_from_buffer(void) {
 	for (i = 0; i < 32; i++) {
 		buf[i] = rand() & 0xff;
 	}
-	printf("HIIIIII %c\n", buf[1]);
+	// printf("HIIIIII %c\n", buf[1]);
 	
 	bn = BN_bin2bn(buf, 32, NULL);
 
@@ -240,8 +240,30 @@ int main(int argc, char *argv[])
 	filename = argv[1];
 
 	//key = generate_key();
+
+	// EC_POINT *pubkey;
+	// pubkey = EC_POINT_new(EC_KEY_get0_group(key));
+
+	// EC_POINT_free(pubkey);
+
+	// //Print Key
+	// EC_GROUP *ec_group = EC_GROUP_new_by_curve_name(EC_GROUP_NID);
+
+	// EC_KEY_set_group(key, ec_group);
+
+	// const EC_POINT *pub = EC_KEY_get0_public_key(key);
+
+	// BIGNUM *x = BN_new();
+	// BIGNUM *y = BN_new();
+
+	// if (EC_POINT_get_affine_coordinates_GFp(ec_group, pub, x, y, NULL)) {
+	// 	BN_print_fp(stdout, x);
+	// 	putc('\n', stdout);
+	// 	BN_print_fp(stdout, y);
+	// 	putc('\n', stdout);
+	// }	
 	//key = generate_key_from_buffer(buf);
-	// key = generate_public_key_from_buffer();
+	//key = generate_public_key_from_buffer();
 	key = generate_public_key_from_time();
 
 	// BIGNUM *dest_x = BN_new();
